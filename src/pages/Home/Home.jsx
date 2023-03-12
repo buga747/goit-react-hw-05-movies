@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { getPopularMovies } from 'services/movieApi';
 import MoviesList from 'components/MoviesList';
 import SkeletonMoviesList from 'components/SkeletonMoviesList';
@@ -31,6 +32,10 @@ const Home = () => {
       <MoviesList movies={movies} />
     </>
   );
+};
+
+Home.propTypes = {
+  movies: PropTypes.array.isRequired,
 };
 
 export default Home;
