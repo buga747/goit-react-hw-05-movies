@@ -16,7 +16,10 @@ const Home = () => {
   const movieName = searchParams.get('query');
 
   const onSearch = query => {
-    setSearchParams(query !== '' ? { query } : {});
+    if (!query.trim()) {
+      return;
+    }
+    setSearchParams({ query });
   };
 
   useEffect(() => {
@@ -26,8 +29,8 @@ const Home = () => {
       }
 
       try {
+        setMovies([]);
         setIsLoading(true);
-
         const movies = await getMoviesByQuery(movieName);
         setMovies(movies);
 
@@ -46,12 +49,12 @@ const Home = () => {
   }, [movieName]);
 
   return (
-    <main>
+    <>
       <SearchForm onSearch={onSearch} />
       {error && 'Error, please reload the page'}
       {isLoading && <SkeletonMoviesList />}
       <MoviesList movies={movies} />
-    </main>
+    </>
   );
 };
 

@@ -5,13 +5,6 @@ import { ToastContainer } from 'react-toastify';
 import { GlobalStyle } from './GlobalStyle';
 import 'react-toastify/dist/ReactToastify.css';
 
-// import Home from '../pages/Home';
-// import Movies from '../pages/Movies';
-// import MovieDetails from '../pages/MovieDetails';
-// import Cast from './Cast';
-// import Reviews from './Reviews';
-// import SharedLayout from './SharedLayout';
-
 const Home = lazy(() =>
   import(/* webpackChunkName: "home" */ 'pages/Home/Home')
 );

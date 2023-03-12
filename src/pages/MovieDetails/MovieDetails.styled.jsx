@@ -10,6 +10,7 @@ export const MovieCard = styled.div`
 
 export const ImageWrapper = styled.div`
   margin-right: 20px;
+  width: 300px;
   img {
     max-width: 100%;
     height: auto;

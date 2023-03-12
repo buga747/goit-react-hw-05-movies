@@ -11,10 +11,16 @@ export default function Cast() {
   }, [id]);
 
   return (
-    <ul>
-      {casts.map(cast => {
-        return <li key={cast.id}>{cast.name}</li>;
-      })}
-    </ul>
+    <>
+      {casts.length > 0 ? (
+        <ul>
+          {casts.map(cast => {
+            return <li key={cast.id}>{cast.name}</li>;
+          })}
+        </ul>
+      ) : (
+        <p>Sorry, no information</p>
+      )}
+    </>
   );
 }

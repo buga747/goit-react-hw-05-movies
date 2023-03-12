@@ -1,9 +1,9 @@
-import { Outlet } from 'react-router-dom';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getMovieDetails } from 'services/movieApi';
 import imageComingSoon from '../../images/imageComingSoon.jpg';
 import { IMAGE_URL } from 'constants/constants';
+import SkeletonMoviesList from 'components/SkeletonMoviesList';
 import {
   MovieCard,
   InfoItem,
@@ -17,7 +17,7 @@ import {
   MovieInfo,
   BackButton,
 } from './MovieDetails.styled';
-import SkeletonMoviesList from 'components/SkeletonMoviesList';
+import { Suspense } from 'react';
 
 const MovieDetails = () => {
   const { id } = useParams();
@@ -25,92 +25,100 @@ const MovieDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const location = useLocation();
+  const { state } = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchdata = async () => {
+    const fetchData = async () => {
       try {
-        const movie = await getMovieDetails(id);
-
         setIsLoading(true);
+        const movie = await getMovieDetails(id);
         setMovieDetails(movie);
-      } catch (e) {
+      } catch {
         setError(true);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchdata();
+    fetchData();
   }, [id]);
 
   const handleGoBack = () => {
-    navigate(location?.state?.from ?? '/');
+    navigate(state?.from || '/');
   };
 
-  if (!movieDetails) {
-    return;
-  }
+  if (movieDetails) {
+    const {
+      genres,
+      title,
+      release_date: releaseDateRaw,
+      overview,
+      vote_average: voteAverage,
+      poster_path: posterPath,
+    } = movieDetails;
 
-  const { genres, title, release_date, overview, vote_average, poster_path } =
-    movieDetails;
-  const imageSRC = poster_path ? IMAGE_URL + poster_path : imageComingSoon;
-  const userScore = Math.round((Number(vote_average) * 100) / 10);
-  const movieGenres = genres.map(genre => genre.name).join(' ');
-  const releaseDate = release_date.slice(0, 4);
+    const imageSRC = posterPath ? `${IMAGE_URL}${posterPath}` : imageComingSoon;
+    const userScore = Math.round(voteAverage * 10);
+    const movieGenres = genres.map(g => g.name).join(' ');
+    const releaseDate = releaseDateRaw?.slice(0, 4);
+    return (
+      <>
+        <BackButton onClick={handleGoBack}>Go Back</BackButton>
+        <Wrapper>
+          <MovieCard>
+            <ImageWrapper>
+              <img src={imageSRC} alt={title} />
+            </ImageWrapper>
+            <MovieInfo>
+              <Title>
+                {title} {releaseDate && `(${releaseDate})`}
+              </Title>
+              <ul>
+                <InfoItem>
+                  {userScore > 0 && <p>User Score: {userScore}%</p>}
+                </InfoItem>
+                <InfoItem>
+                  <b>Overview</b>
+                  <p>{overview}</p>
+                </InfoItem>
+                <InfoItem>
+                  <b>Genres</b>
+                  <p>{movieGenres || ' - '}</p>
+                </InfoItem>
+              </ul>
+            </MovieInfo>
+          </MovieCard>
+        </Wrapper>
+        <ExtraInfoSection>
+          <ExtraInfoTitle> Additional information</ExtraInfoTitle>
+          <div>
+            <ul>
+              <ListItem>
+                <InfoLink to="cast" state={state}>
+                  Cast
+                </InfoLink>
+              </ListItem>
+
+              <ListItem>
+                <InfoLink to="reviews" state={state}>
+                  Reviews
+                </InfoLink>
+              </ListItem>
+            </ul>
+          </div>
+        </ExtraInfoSection>
+
+        <Suspense fallback={<div>Loading subpage...</div>}>
+          <Outlet />
+        </Suspense>
+      </>
+    );
+  }
 
   return (
     <>
-      <BackButton onClick={handleGoBack}>Go Back</BackButton>
-      {error && 'Error, please reload the page'}
+      {error && <div>Error, please reload the page</div>}
       {isLoading && <SkeletonMoviesList />}
-      <Wrapper>
-        <MovieCard>
-          <ImageWrapper>
-            <img src={`${imageSRC}`} alt={title} />
-          </ImageWrapper>
-          <MovieInfo>
-            <Title>
-              {title} {releaseDate && `(${releaseDate})`}
-            </Title>
-            <ul>
-              <InfoItem>
-                {userScore > 0 && <p>User Score: {userScore}%</p>}
-              </InfoItem>
-              <InfoItem>
-                <b>Overview</b>
-
-                <p>{overview}</p>
-              </InfoItem>
-              <InfoItem>
-                <b>Genres</b>
-
-                <p>{movieGenres || ' - '}</p>
-              </InfoItem>
-            </ul>
-          </MovieInfo>
-        </MovieCard>
-      </Wrapper>
-      <ExtraInfoSection>
-        <ExtraInfoTitle> Additional information</ExtraInfoTitle>
-        <div>
-          <ul>
-            <ListItem>
-              <InfoLink to="cast" state={location.state}>
-                Cast
-              </InfoLink>
-            </ListItem>
-
-            <ListItem>
-              <InfoLink to="reviews" state={location.state}>
-                Reviews
-              </InfoLink>
-            </ListItem>
-          </ul>
-        </div>
-      </ExtraInfoSection>
-
-      <Outlet />
     </>
   );
 };

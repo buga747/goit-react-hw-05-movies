@@ -5,15 +5,14 @@ function SearchForm({ onSearch }) {
   const {
     register,
     handleSubmit,
-    reset,
+
     formState: { errors },
   } = useForm({ defaultValues: { search: '' } });
   const onSubmit = formData => {
-    if (formData.search === '') {
+    if (formData.search.trim() === '') {
       return;
     }
     onSearch(formData.search.trim());
-    reset();
   };
 
   return (
